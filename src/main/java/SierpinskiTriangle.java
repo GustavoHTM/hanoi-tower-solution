@@ -147,9 +147,9 @@ public class SierpinskiTriangle {
         }
 
         if (node.bestName.startsWith("1")) {
-            return node.upCount + 1 > node.rightCount;
+            return node.upCount > node.rightCount;
         } else {
-            return node.rightCount + 1 > node.upCount;
+            return node.rightCount > node.upCount;
         }
     }
 
