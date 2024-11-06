@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class SierpinskiTriangle {
     public static int numDisks = 0;
@@ -93,10 +94,10 @@ public class SierpinskiTriangle {
         this.triangle.rightNode = this.triangle.right.rightNode;
 
         // Atualizando o bestName e o midName conforme a lógica de posicionamento
-        setBestAndMidName(this.triangle.left.rightNode, this.triangle.left.topNode, this.triangle.right.leftNode);
-        setBestAndMidName(this.triangle.top.rightNode, this.triangle.top.topNode, this.triangle.right.topNode);
-        setBestAndMidName(this.triangle.left.topNode, this.triangle.top.leftNode, this.triangle.left.rightNode);
-        setBestAndMidName(this.triangle.right.topNode, this.triangle.top.rightNode, this.triangle.right.rightNode);
+        setBestAndMidName(this.triangle.left.rightNode, this.triangle.left.topNode, this.triangle.right.leftNode, this.triangle.left.leftNode);
+        setBestAndMidName(this.triangle.top.rightNode, this.triangle.top.topNode, this.triangle.right.topNode, this.triangle.top.leftNode);
+        setBestAndMidName(this.triangle.left.topNode, this.triangle.top.leftNode, this.triangle.left.rightNode, this.triangle.left.leftNode);
+        setBestAndMidName(this.triangle.right.topNode, this.triangle.top.rightNode, this.triangle.right.rightNode, this.triangle.right.leftNode);
 
         // Atualizando o worstName quando necessário
         if (this.triangle.top.leftNode.worstName == null) {
@@ -109,7 +110,7 @@ public class SierpinskiTriangle {
     }
 
     // Submétodo para definir o bestName e o midName de acordo com a lógica de posição
-    private void setBestAndMidName(Node node, Node primaryOption, Node secondaryOption) {
+    private void setBestAndMidName(Node node, Node primaryOption, Node secondaryOption, Node thirdOption) {
         if (node.bestName == null) {
             if (shouldGoRight(node)) {
                 node.bestName = secondaryOption.name;
@@ -118,6 +119,13 @@ public class SierpinskiTriangle {
                 node.bestName = primaryOption.name;
                 node.midName = secondaryOption.name;
             }
+        }
+
+        if (shouldGoLeft(node)) {
+            node.worstName = node.midName;
+            node.midName = thirdOption.name;
+        } else {
+            node.worstName = thirdOption.name;
         }
     }
 
@@ -131,6 +139,18 @@ public class SierpinskiTriangle {
         }
 
         return node.rightCount > node.upCount;
+    }
+
+    public boolean shouldGoLeft(Node node) {
+        if (node.name.startsWith("0")) {
+            return false;
+        }
+
+        if (node.bestName.startsWith("1")) {
+            return node.upCount + 1 > node.rightCount;
+        } else {
+            return node.rightCount + 1 > node.upCount;
+        }
     }
 
     /** Creates a smaller triangle case
