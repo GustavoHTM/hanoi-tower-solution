@@ -2,12 +2,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class SierpinskiTriangle {
     public static int numDisks = 0;
 
     public static Map<String, Node> NODE_MAP = new HashMap<>();
+    public static Map<String, Triangle> TRIANGLE_MAP = new HashMap<>();
 
     private final int iterationNumber;
     private final List<List<Integer>> gameState;
@@ -81,9 +81,17 @@ public class SierpinskiTriangle {
         topNode.worstName = leftNode.name;
         rightNode.worstName = leftNode.name;
 
-        NODE_MAP.put(leftNode.name, leftNode);
-        NODE_MAP.put(topNode.name, topNode);
-        NODE_MAP.put(rightNode.name, rightNode);
+        this.storeTriangleInfo(this.triangle);
+    }
+
+    private void storeTriangleInfo(Triangle triangle) {
+        NODE_MAP.put(triangle.leftNode.name, triangle.leftNode);
+        NODE_MAP.put(triangle.topNode.name, triangle.topNode);
+        NODE_MAP.put(triangle.rightNode.name, triangle.rightNode);
+
+        TRIANGLE_MAP.put(triangle.leftNode.name, triangle);
+        TRIANGLE_MAP.put(triangle.topNode.name, triangle);
+        TRIANGLE_MAP.put(triangle.rightNode.name, triangle);
     }
 
     // Submétodo para atualizar os nós do triângulo
@@ -93,11 +101,17 @@ public class SierpinskiTriangle {
         this.triangle.topNode = this.triangle.top.topNode;
         this.triangle.rightNode = this.triangle.right.rightNode;
 
-        // Atualizando o bestName e o midName conforme a lógica de posicionamento
-        setBestAndMidName(this.triangle.left.rightNode, this.triangle.left.topNode, this.triangle.right.leftNode, this.triangle.left.leftNode);
-        setBestAndMidName(this.triangle.top.rightNode, this.triangle.top.topNode, this.triangle.right.topNode, this.triangle.top.leftNode);
-        setBestAndMidName(this.triangle.left.topNode, this.triangle.top.leftNode, this.triangle.left.rightNode, this.triangle.left.leftNode);
-        setBestAndMidName(this.triangle.right.topNode, this.triangle.top.rightNode, this.triangle.right.rightNode, this.triangle.right.leftNode);
+        Triangle originalTriangle = TRIANGLE_MAP.get(this.triangle.left.rightNode.name);
+        setBestAndMidName(this.triangle.left.rightNode, originalTriangle.topNode, this.triangle.right.leftNode, originalTriangle.leftNode);
+
+        originalTriangle = TRIANGLE_MAP.get(this.triangle.top.rightNode.name);
+        setBestAndMidName(this.triangle.top.rightNode, originalTriangle.topNode, this.triangle.right.topNode, originalTriangle.leftNode);
+
+        originalTriangle = TRIANGLE_MAP.get(this.triangle.left.topNode.name);
+        setBestAndMidName(this.triangle.left.topNode, this.triangle.top.leftNode, originalTriangle.rightNode, originalTriangle.leftNode);
+
+        originalTriangle = TRIANGLE_MAP.get(this.triangle.right.topNode.name);
+        setBestAndMidName(this.triangle.right.topNode, this.triangle.top.rightNode, originalTriangle.rightNode, originalTriangle.leftNode);
 
         // Atualizando o worstName quando necessário
         if (this.triangle.top.leftNode.worstName == null) {
@@ -158,21 +172,21 @@ public class SierpinskiTriangle {
     public void buildLeftTriangle() {
 
         List<List<Integer>> newGameState = newInstance(carryDisks(this.gameState, this.iterationNumber, this.left[0]));
-        triangle.left = new SierpinskiTriangle(this.iterationNumber-1, newGameState, this.bottom, flip(right), this.left, this.countUp, this.countRight, this.countLeft + 1).init();
+        triangle.left = new SierpinskiTriangle(this.iterationNumber-1, newGameState, this.bottom, flip(right), this.left, this.countUp, this.countRight, this.countLeft + (int) Math.pow(iterationNumber, 3)).init();
     }
 
     /** Creates a smaller triangle case
      */
     public void buildRightTriangle() {
         List<List<Integer>> newGameState = newInstance(carryDisks(this.gameState, this.iterationNumber, this.right[1]));
-        triangle.right = new SierpinskiTriangle(this.iterationNumber-1, newGameState, flip(this.left), this.bottom, this.right, this.countUp, this.countRight + 1, this.countLeft).init();
+        triangle.right = new SierpinskiTriangle(this.iterationNumber-1, newGameState, flip(this.left), this.bottom, this.right, this.countUp, this.countRight + (int) Math.pow(iterationNumber, 3), this.countLeft).init();
     }
 
     /** Creates a smaller triangle case
      */
     public void buildTopTriangle() {
         List<List<Integer>> newGameState = newInstance(carryDisks(this.gameState, this.iterationNumber, this.left[1]));
-        triangle.top = new SierpinskiTriangle(this.iterationNumber-1, newGameState, flip(this.right), flip(this.left), flip(this.bottom), this.countUp + 1, this.countRight, this.countLeft).init();
+        triangle.top = new SierpinskiTriangle(this.iterationNumber-1, newGameState, flip(this.right), flip(this.left), flip(this.bottom), this.countUp + (int) Math.pow(iterationNumber, 3), this.countRight, this.countLeft).init();
     }
 
     /** Determines create the visual representation of this current state.
